@@ -70,17 +70,23 @@ function Register(props) {
     if(emailError){
       return "This email already exists. Are you sure you don't have an account with us already?";
     }
-    if(emailInvalidError){
+    else if(emailInvalidError){
       return "This email appears to be invalid.";
     }
-    if(usernameError){
+    else if(usernameError){
       return "This username already exists.";
     }
-    if(passwordLengthError){
+    else if(passwordLengthError){
       return "Your password must be eight characters or longer.";
     }
-    if(usernameLengthError){
+    else if(usernameLengthError){
       return "Your username must be between 5 and 15 characters in length.";
+    }
+    else if(firstnameError){
+      return "Your first name should be more than 2 characters in length.";
+    }
+    else if(lastnameError){
+      return "Your last name should be more than 2 characters in length.";
     }
   }
 
@@ -105,8 +111,6 @@ function Register(props) {
     }).then((res) => {
       if (res.data.success) {
         setNextPartCheck(true);
-        // props.handleClose();
-        // window.location.reload();
       } else{
           if (res.data.reason === "emailexists"){
             setEmailError(true);
@@ -148,18 +152,18 @@ function Register(props) {
       } else{
         if (res.data.reason === "firstnamelength"){
           setFirstnameError(true);
-          console.log("fname error")
         }
         if (res.data.reason === "lastnamelength"){
           setLastnameError(true);
-          console.log("lname error")
         }
       }
       setSubmitBtn(false);
       });
   };
   return (
-    <>
+    <Spring from={{opacity: 0}} to={{opacity:1}} config={{delay:100, duration:1000}}>
+    {propsAni => (
+      <div style={propsAni}>
         <i className={!nextPartCheck ? "user-modal-splash-image user-modal-x fas fa-times" : "user-modal-x display-none"} onClick={props.handleClose}></i>
         <i className={nextPartCheck ? "user-modal-splash-image backarrow fas fa-arrow-left" : "backarrow display-none"} onClick={backButton}></i>
         {/* <img className="user-modal-splash-image" src="img/wave.png"/> */}
@@ -174,27 +178,25 @@ function Register(props) {
                 {/* <img src="images/login.png"/> */}
                 <h2 className="user-modal-title">Plan your next trip.</h2>
 
-
-                  
                 <div className={!nextPartCheck ? "display-none" : inputFnameCount ? firstnameError ? "user-modal-inputdiv fname focus error" : "user-modal-inputdiv fname focus" : "user-modal-inputdiv fname"}>
-                    <div className="user-modal-i">
-                      <i className="fas fa-user-tag"></i>
-                    </div>
-                    <div>
-                      <h5>First Name</h5>
-                      <input type="text" className="user-modal-input" maxLength="30" onChange={(val) => {setFirstname(val.target.value); countInput(val.target.value, "fname") }}/>
-                    </div>
+                  <div className="user-modal-i">
+                    <i className="fas fa-user-tag"></i>
                   </div>
+                  <div>
+                    <h5>First Name</h5>
+                    <input type="text" className="user-modal-input" maxLength="30" onChange={(val) => {setFirstname(val.target.value); countInput(val.target.value, "fname") }}/>
+                  </div>
+                </div>
                   
-                  <div className={nextPartCheck ? inputLnameCount ? "user-modal-inputdiv lname focus" : "user-modal-inputdiv lname active" : "display-none lname hidden"}>
-                    <div className="user-modal-i">
-                      <i className="fas fa-user-tag"></i>
-                    </div>
-                    <div>
-                      <h5>Last Name</h5>
-                      <input type="text" className="user-modal-input" maxLength="35" onChange={(val) => {setLastname(val.target.value); countInput(val.target.value, "lname") }}/>
-                    </div>
+                <div className={!nextPartCheck ? "display-none" : inputLnameCount ? lastnameError ? "user-modal-inputdiv lname focus error" : "user-modal-inputdiv lname focus" : "user-modal-inputdiv lname"}>
+                  <div className="user-modal-i">
+                    <i className="fas fa-user-tag"></i>
                   </div>
+                  <div>
+                    <h5>Last Name</h5>
+                    <input type="text" className="user-modal-input" maxLength="35" onChange={(val) => {setLastname(val.target.value); countInput(val.target.value, "lname") }}/>
+                  </div>
+                </div>
 
 
                   <div className={nextPartCheck ? "display-none" : inputEmailCount ? emailError || emailInvalidError ? "user-modal-inputdiv email focus error" : "user-modal-inputdiv email focus" : "user-modal-inputdiv email"}>
@@ -203,7 +205,7 @@ function Register(props) {
                     </div>
                     <div>
                       <h5>Email</h5>
-                      <input type="email" autoComplete="off" className="user-modal-input" onChange={(val) => {setRegisterEmail(val.target.value); countInput(val.target.value, "email") }}/>
+                      <input type="email" className="user-modal-input" onChange={(val) => {setRegisterEmail(val.target.value); countInput(val.target.value, "email") }}/>
                     </div>
                   </div>
 
@@ -243,8 +245,10 @@ function Register(props) {
                 </div>
             </div>
           </div>
-        </div>         
-    </>    
+        </div>
+      </div>
+        )}         
+    </Spring>    
   );
 }
 

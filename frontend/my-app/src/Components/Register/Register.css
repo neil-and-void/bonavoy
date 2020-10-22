@@ -16,19 +16,3 @@
 .backarrow:hover{
     color: #3f3d56;
 }
-
-.fname.active{
-    opacity: 1;
-}
-.fname.hidden{
-    opacity: 0;
-    transition: 1s linear;
-}
-
-.lname.active{
-    opacity: 1;
-}
-.lname.hidden{
-    opacity: 0;
-    transition: 1s linear;
-}

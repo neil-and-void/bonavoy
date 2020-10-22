@@ -300,3 +300,11 @@
 		margin-top: 50px;
 	}
 }
+/* this fixes the autocomplete issue  */
+.user-modal-input:-webkit-autofill,
+.user-modal-input:-webkit-autofill:hover,
+.user-modal-input:-webkit-autofill:focus,
+.user-modal-input:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s;
+    -webkit-text-fill-color: #000 !important;
+}

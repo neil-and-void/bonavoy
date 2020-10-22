@@ -79,7 +79,7 @@ function Login(props) {
                       </div>
                       <div>
                         <h5>Username</h5>
-                        <input type="text" autoComplete="off" id="username" name="username" className="user-modal-input" maxLength="15" onChange={(val) => {setLoginUsername(val.target.value); countInput(val.target.value, "login")}}/>
+                        <input type="text" id="username" name="username" className="user-modal-input" maxLength="15" onChange={(val) => {setLoginUsername(val.target.value); countInput(val.target.value, "login")}}/>
                         <label className="user-modal-username-label" ></label>
                       </div>
                     </div>

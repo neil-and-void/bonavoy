@@ -8,7 +8,7 @@ const utils = require('../utils/jwt.utils');
 const db = require('../utils/db.utils');
 
 // Routes
-app.post("/login", (req, res, next) => {
+router.post("/login", (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
     if (err) throw err;
     if (!user) res.json({success: false});
@@ -23,7 +23,8 @@ app.post("/login", (req, res, next) => {
     }
   })(req, res, next);
 });
-app.post("/preregister", (req, res, next) => {
+
+router.post("/preregister", (req, res, next) => {
   
   const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   if (!re.test(req.body.email)) {
@@ -65,7 +66,8 @@ app.post("/preregister", (req, res, next) => {
     }
   });
 });
-app.post("/register", (req, res, next) => {
+
+router.post("/register", (req, res, next) => {
   
   if ((req.body.firstname.length < 1) || (req.body.firstname.length > 30)) {
     return res.json({
@@ -110,11 +112,11 @@ app.post("/register", (req, res, next) => {
   });
 });
 
-app.get("/getUser", (req, res) => {
+router.get("/getUser", (req, res) => {
   res.send(req.user); // The req.user stores the entire user that has been authenticated inside of it.
 });
 
-app.get('/logout', function (req, res){
+router.get('/logout', function (req, res){
   req.session.destroy();
 });
 
@@ -122,13 +124,6 @@ app.get('/logout', function (req, res){
 router.get('/trips', (req, res) => {
 	res.send('trips');
 })
-
-
-// plan and edit a trip
-router.get('/trips/planner', (req, res) => {
-	res.send('planner');
-});
-
 
 // view and edit account details
 router.get('/account', 

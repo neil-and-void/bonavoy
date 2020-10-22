@@ -6,6 +6,7 @@ const { check, validationResult } = require('express-validator');
 
 const utils = require('../utils/jwt.utils');
 const db = require('../utils/db.utils');
+const User = require("../models/User.model");
 
 // Routes
 router.post("/login", (req, res, next) => {
@@ -68,19 +69,18 @@ router.post("/preregister", (req, res, next) => {
 });
 
 router.post("/register", (req, res, next) => {
-  
   if ((req.body.firstname.length < 1) || (req.body.firstname.length > 30)) {
     return res.json({
       success: false,
       reason: 'firstnamelength'
-    });
+		});
   }
   if (req.body.lastname.length < 1 || req.body.lastname.length > 35) {
     return res.json({
       success: false,
       reason: 'lastnamelength'
     });
-  }
+	}
   User.findOne({ $or: [{username: req.body.username}, {email: req.body.email}]}, async (err, doc) => {
     if (err) throw err;
     if (!doc) {

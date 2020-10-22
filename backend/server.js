@@ -11,7 +11,6 @@ const bcrypt = require("bcryptjs");
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const app = express();
-const User = require("./models/User.model");
 //----------------------------------------- END OF IMPORTS---------------------------------------------------
 
 // setup websocket

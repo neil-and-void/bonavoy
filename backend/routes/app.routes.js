@@ -7,101 +7,117 @@ const { check, validationResult } = require('express-validator');
 const utils = require('../utils/jwt.utils');
 const db = require('../utils/db.utils');
 
+// Routes
+app.post("/login", (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) throw err;
+    if (!user) res.json({success: false});
+    else {
+      req.logIn(user, (err) => {
+        if (err) throw err;
+        res.json({
+          success: true
+        });
+        console.log(req.user);
+      });
+    }
+  })(req, res, next);
+});
+app.post("/preregister", (req, res, next) => {
+  
+  const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  if (!re.test(req.body.email)) {
+    return res.json({
+      success: false,
+      reason: 'invalidemail'
+    });
+  }
+  if ((req.body.username.length <= 4) || (req.body.username.length > 15)) {
+    return res.json({
+      success: false,
+      reason: 'usernamelength'
+    });
+  }
+  if (req.body.password.length < 8 || req.body.password.length > 25) {
+    return res.json({
+      success: false,
+      reason: 'passwordlength'
+    });
+  }
+  User.findOne({ $or: [{username: req.body.username}, {email: req.body.email}]}, async (err, doc) => {
+    if (err) throw err;
+    if (doc && doc.username === req.body.username){
+      return res.json({
+        success: false,
+        reason: 'usernameexists'
+      });
+    }
+    if (doc && doc.email === req.body.email){
+      return res.json({
+        success: false,
+        reason: 'emailexists'
+      });
+    }
+    if (!doc) {
+      return res.json({
+        success: true
+      });
+    }
+  });
+});
+app.post("/register", (req, res, next) => {
+  
+  if ((req.body.firstname.length < 1) || (req.body.firstname.length > 30)) {
+    return res.json({
+      success: false,
+      reason: 'firstnamelength'
+    });
+  }
+  if (req.body.lastname.length < 1 || req.body.lastname.length > 35) {
+    return res.json({
+      success: false,
+      reason: 'lastnamelength'
+    });
+  }
+  User.findOne({ $or: [{username: req.body.username}, {email: req.body.email}]}, async (err, doc) => {
+    if (err) throw err;
+    if (!doc) {
+      const hash = await bcrypt.hash(req.body.password, 10);
+      const newUser = new User({
+        firstname: req.body.firstname,
+        lastname:req.body.lastname,
+        username: req.body.username,
+        password: hash,
+        email: req.body.email,
+        DateCreated: new Date(),
+        verified: false
+      });
+      await newUser.save();
+      passport.authenticate("local", (err, user, info) => {
+        if (err) throw err;
+        if (!user) res.send("No User Exists");
+        else {
+          req.logIn(user, (err) => {
+            if (err) throw err;
+            res.json({
+              success: true
+            });
+            console.log(req.user);
+          });
+        }
+      })(req, res, next);
+    }
+  });
+});
 
-// login
-router.post('/login', (req, res) => {
-	
-	const userEmailQuery = 'SELECT hash FROM Users WHERE email = ?;'
-	
-	db.query(userEmailQuery, [req.body.email], (err, results, field) => {
-		if(err){
-			return res.send(err);
-		}
-		
-		if(results === null || results.length < 1){
-			return res.status(401)
-			.json({success:false, msg:"no user with that email"});
-		}
-		
-		const hash = results[0].hash;
-		
-		// compare hashed passwords
-		bcrypt.compare(req.body.password, hash, (err, isMatch) => {
-			if(err) throw err;
-			
-			// good login
-			if(isMatch){
-				const tokenObj = utils.issueJWT(req.body);
-				return res.status(200)
-				.json({
-					success:true, 
-					token:tokenObj.token, 
-					expiresIn:tokenObj.expires
-				});
-			} 
-			
-			// bad login
-			else {
-				return res.status(401).json({success:false, msg:'wrong password'});
-			}
-		}); 
-	})
-	
-})
+app.get("/getUser", (req, res) => {
+  res.send(req.user); // The req.user stores the entire user that has been authenticated inside of it.
+});
 
+app.get('/logout', function (req, res){
+  req.session.destroy();
+});
 
-// register
-router.post('/register', [
-	check('email').notEmpty(),
-	check('firstname').isLength({min:2}),
-	check('password').isLength({min:6}),
-	check('confirmPassword', 'Passwords do not match')
-	.notEmpty()
-	.custom((value, { req }) => value === req.body.password),
-	check('email').isEmail()
-],
-(req, res, next) => {
-	
-	let errors = validationResult(req);
-	if(!errors.isEmpty()){
-		return res.status(422).json(errors.array());
-	}
-	
-	const userData = req.body;  
-	const firstname = userData.firstname;
-	const email = userData.email; 
-	
-	// hash password with salt
-	bcrypt.genSalt(8, (err, salt) => { 
-		bcrypt.hash(userData.password, salt, (err, hash) => {
-			if(err){
-				console.log(err);
-				res.send(err);
-			}
-			
-			const newUserQuery = 'INSERT INTO Users (email, hash, firstname) VALUES (?, ?, ?);';
-			
-			db.query(newUserQuery, [email, hash, firstname], 
-				(err, results, fields) => {
-					if(err){
-						console.log(err);
-						return res.send(err);
-					}   
-					
-					const jwt = utils.issueJWT(results.insertId);
-					return res.json({
-						success:true, 
-						token:jwt.token, 
-						expiresIn: jwt.expires
-					});
-				});
-				
-			});
-		})
-		
-	}
-	)
-	
 // view users trips
 router.get('/trips', (req, res) => {
 	res.send('trips');

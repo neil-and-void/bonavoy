@@ -61,8 +61,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 require("./config/passport.config")(passport);
 
-
-
 app.use('/api', require('./routes/app.routes')); 
 app.use('/api/external', require('./routes/external.routes')); 
 
